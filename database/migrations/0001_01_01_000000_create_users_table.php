@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            // le role de l'utilisateur : candidat ou recruteur
+            $table->string('role')->default('candidate');
             $table->rememberToken();
             $table->timestamps();
         });
