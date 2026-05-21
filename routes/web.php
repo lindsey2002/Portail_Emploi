@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\OfferController;
+use App\Http\Controllers\ApplicationController;
+use App\Models\Offer;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -9,6 +11,14 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
+    $user = Auth::user();
+    
+    // Si c'est un candidat, on récupère toutes les offres de la base de données
+    if ($user->role === 'candidate') {
+        $offers = Offer::latest()->get();
+        return view('dashboard', compact('offers'));
+    }
+
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -19,6 +29,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/offers/create', [OfferController::class, 'create'])->name('offers.create');
     Route::post('/offers', [OfferController::class, 'store'])->name('offers.store');
+    Route::get('/offers/{offer}/apply', [ApplicationController::class, 'create'])->name('applications.create');
+    Route::post('/offers/{offer}/apply', [ApplicationController::class, 'store'])->name('applications.store');
 });
 
 require __DIR__.'/auth.php';
