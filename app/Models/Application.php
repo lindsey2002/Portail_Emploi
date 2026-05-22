@@ -13,6 +13,7 @@ class Application extends Model
         'user_id',
         'cover_letter',
         'resume_path',
+        'match_score',
     ];
 
     public function offer(): BelongsTo

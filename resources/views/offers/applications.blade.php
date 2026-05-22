@@ -26,6 +26,22 @@
                             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100 pb-3">
                                 <div>
                                     <h3 class="text-lg font-bold text-gray-900">{{ $application->user->name }}</h3>
+                                    <div class="mt-1 flex items-center space-x-2">
+                                        <span class="text-xs font-semibold text-gray-500">Compatibilité IA Profile :</span>
+                                        @if($application->match_score >= 70)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-green-100 text-green-800">
+                                                {{ $application->match_score }}% (Profil Idéal)
+                                            </span>
+                                        @elseif($application->match_score >= 40)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-yellow-100 text-yellow-800">
+                                                {{ $application->match_score }}% (Profil Moyen)
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-800">
+                                                {{ $application->match_score }}% (Faible correspondance)
+                                            </span>
+                                        @endif
+                                    </div>
                                     <p class="text-sm text-gray-500">Contact : {{ $application->user->email }} • Postulé le {{ $application->created_at->format('d/m/Y à H:i') }}</p>
                                 </div>
                                 
