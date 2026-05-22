@@ -1,246 +1,479 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Tableau de bord') }}
-        </h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+            <div>
+                <h2 style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;letter-spacing:-.03em;color:#0D0D0D">
+                    @if(Auth::user()->role === 'recruiter')
+                        Espace Recruteur
+                    @else
+                        Espace Candidat
+                    @endif
+                </h2>
+                <p style="font-size:13px;color:#7A7A7A;margin-top:2px">
+                    Bonjour, <strong>{{ Auth::user()->name }}</strong> 👋
+                </p>
+            </div>
+            @if(Auth::user()->role === 'recruiter')
+                <a href="{{ route('offers.create') }}" class="dash-btn-primary">+ Publier une offre</a>
+            @endif
+        </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+    <link href="https://fonts.bunny.net/css?family=syne:400,500,600,700,800|instrument-sans:400,500,600" rel="stylesheet"/>
+    <style>
+        :root{
+            --ink:#0D0D0D;--ink-2:#3A3A3A;--ink-3:#7A7A7A;
+            --surface:#F7F5F0;--card:#FFFFFF;
+            --accent:#FF4D00;--accent-2:#FFB800;
+            --blue:#1A56DB;--blue-lt:#EBF2FF;
+            --green:#0A7A3E;--green-lt:#E6F7EE;
+            --amber:#B45309;--amber-lt:#FEF3C7;
+            --red:#B91C1C;--red-lt:#FEE2E2;
+            --border:#E5E2DA;
+        }
+        *{box-sizing:border-box}
+        body{font-family:'Instrument Sans',sans-serif;background:var(--surface);color:var(--ink)}
+        h1,h2,h3,h4,.syne{font-family:'Syne',sans-serif}
 
-                    <!-- GESTION DE L'ESPACE RECRUTEUR -->
-                    @if(Auth::user()->role === 'recruiter')
-                        <div class="flex justify-between items-center mb-8">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-900">Espace Recruteur</h3>
-                                <p class="text-sm text-gray-600">Gérez vos publications et examinez les profils reçus.</p>
-                            </div>
-                            <a href="{{ route('offers.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition shadow-sm">
-                                + Publier une offre
-                            </a>
-                        </div>
+        .dash-wrap{max-width:1100px;margin:0 auto;padding:2rem 1.5rem}
 
-                        <h4 class="text-md font-semibold text-gray-700 mb-4">Vos annonces en ligne ({{ $myOffers->count() }})</h4>
+        /* STAT CARDS */
+        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:2rem}
+        .stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.3rem;transition:box-shadow .2s,transform .15s}
+        .stat-card:hover{box-shadow:4px 4px 0 var(--ink);transform:translate(-2px,-2px);border-color:var(--ink)}
+        .stat-card .s-label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px}
+        .stat-card .s-val{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;letter-spacing:-.04em;color:var(--ink);line-height:1}
+        .stat-card .s-sub{font-size:12px;color:var(--ink-3);margin-top:6px}
+        .stat-card .s-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
 
-                        @if($myOffers->isEmpty())
-                            <div class="p-8 bg-gray-50 border border-gray-200 rounded-xl text-center text-gray-500">
-                                Vous n'avez pas encore publié d'offre d'emploi.
-                            </div>
-                        @else
-                            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-                                <table class="w-full text-left border-collapse">
-                                    <thead>
-                                        <tr class="bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                            <th class="p-4">Poste</th>
-                                            <th class="p-4">Entreprise</th>
-                                            <th class="p-4">Lieu</th>
-                                            <th class="p-4">Type</th>
-                                            <th class="p-4 text-center">Candidatures</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="text-sm divide-y divide-gray-200">
-                                        @foreach($myOffers as $myOffer)
-                                            <tr class="hover:bg-gray-50 transition">
-                                                <td class="p-4 font-semibold text-gray-900">{{ $myOffer->title }}</td>
-                                                <td class="p-4 text-gray-600">{{ $myOffer->company_name }}</td>
-                                                <td class="p-4 text-gray-500">{{ $myOffer->location }}</td>
-                                                <td class="p-4">
-                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                        {{ $myOffer->contract_type }}
-                                                    </span>
-                                                </td>
-                                                <td class="p-4 text-center">
-                                                    @php
-                                                        $count = \App\Models\Application::where('offer_id', $myOffer->id)->count();
-                                                    @endphp
-                                                    <a href="{{ route('offers.applications', $myOffer->id) }}" class="inline-flex items-center px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-xs rounded-full transition">
-                                                        Voir les CV ({{ $count }})
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        @endif
+        /* SECTION BLOCKS */
+        .block{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:1.5rem}
+        .block-head{padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem}
+        .block-head h3{font-size:15px;font-weight:700;letter-spacing:-.02em;color:var(--ink)}
+        .block-head p{font-size:12px;color:var(--ink-3);margin-top:2px}
+        .block-body{padding:1.5rem}
 
-                <!-- INJECTION DU NOUVEAU TABLEAU DE SUIVI DES CANDIDATURES REÇUES -->
-                    <div class="mt-12 border-t pt-8">
-    <h3 class="text-xl font-bold text-gray-900 mb-2">Gestion des candidatures reçues</h3>
-    <p class="text-sm text-gray-600 mb-6">Consultez et modifiez le statut des candidats qui ont postulé à vos offres.</p>
+        /* TABLE */
+        .dash-table{width:100%;border-collapse:collapse;font-size:13px}
+        .dash-table thead tr{border-bottom:1px solid var(--border)}
+        .dash-table th{padding:10px 14px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);text-align:left;white-space:nowrap}
+        .dash-table td{padding:12px 14px;border-bottom:1px solid var(--border);color:var(--ink-2);vertical-align:middle}
+        .dash-table tr:last-child td{border-bottom:none}
+        .dash-table tbody tr{transition:background .12s}
+        .dash-table tbody tr:hover{background:#FAFAF8}
+        .td-title{font-weight:600;color:var(--ink);font-family:'Syne',sans-serif;font-size:13px}
+        .td-sub{font-size:11px;color:var(--ink-3);margin-top:2px}
 
-    @if(isset($recruiterApplications) && !$recruiterApplications->isEmpty())
-        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-            <table class="min-w-full divide-y divide-gray-200 text-left">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Candidat</th>
-                        <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Poste visé</th>
-                        <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Score Matching</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                    @foreach($recruiterApplications as $application)
-                        <tr class="hover:bg-gray-50 transition">
-                            <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
-                                {{ $application->user->name }} <br>
-                                <span class="text-xs text-gray-500">{{ $application->user->email }}</span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-gray-600">
-                                {{ $application->offer->title ?? 'Offre indisponible' }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $application->match_score >= 70 ? 'bg-green-100 text-green-800' : ($application->match_score >= 40 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
-                                    {{ $application->match_score }}%
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                                <!-- Bouton Accepter (Devient Bleu si déjà accepté) -->
-                                <form action="{{ route('applications.update-status', [$application->id, 'accepte']) }}" method="POST" class="inline">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button type="submit" class="inline-block px-4 py-2 text-xs font-bold uppercase rounded-md shadow-md transition cursor-pointer select-none {{ $application->status === 'accepte' ? 'bg-blue-600 text-white' : 'bg-gray-200 hover:bg-blue-600 hover:text-white text-gray-700' }}">
-                                        Accepter
-                                    </button>
-                                </form>
+        /* BADGES */
+        .badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:700;letter-spacing:.03em;white-space:nowrap}
+        .badge-green{background:var(--green-lt);color:var(--green)}
+        .badge-amber{background:var(--amber-lt);color:var(--amber)}
+        .badge-red{background:var(--red-lt);color:var(--red)}
+        .badge-blue{background:var(--blue-lt);color:var(--blue)}
+        .badge-gray{background:#F1EFE8;color:#5F5E5A}
+        .badge-ink{background:var(--ink);color:#fff}
 
-                                <!-- Bouton Refuser (Devient Rouge si déjà refusé) -->
-                                <form action="{{ route('applications.update-status', [$application->id, 'refuse']) }}" method="POST" class="inline">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button type="submit" class="inline-block px-4 py-2 text-xs font-bold uppercase rounded-md shadow-md transition cursor-pointer select-none {{ $application->status === 'refuse' ? 'bg-rose-600 text-white' : 'bg-gray-200 hover:bg-rose-600 hover:text-white text-gray-700' }}">
-                                        Refuser
-                                    </button>
-                                </form>
-                                <form action="{{ route('applications.destroy', $application->id) }}" method="POST" onsubmit="return confirm('Retirer définitivement ce candidat de la liste ?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" style="color: #dc3545; background: none; border: none; padding: 0; cursor: pointer;">
-                                        ❌ Retirer la candidature
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    @else
-        <div class="p-6 bg-gray-50 border rounded-lg text-center text-gray-500">
-            Aucune candidature n'a encore été déposée pour vos offres.
-        </div>
-    @endif
-</div>    
-                    <!-- GESTION DE L'ESPACE CANDIDAT -->
-                    @else
-                        <div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-2">Espace Candidat</h3>
-                            <p class="text-sm text-gray-600 mb-8">Consultez les dernières opportunités disponibles et postulez en un clic.</p>
-                            
-                            <h4 class="text-md font-semibold text-gray-700 mb-4">Vos candidatures envoyées ({{ $applications->count() }})</h4>
+        /* BUTTONS */
+        .dash-btn-primary{
+            display:inline-flex;align-items:center;gap:6px;
+            background:var(--ink);color:#fff;text-decoration:none;
+            font-family:'Syne',sans-serif;font-size:12px;font-weight:700;
+            padding:10px 20px;border-radius:9px;border:none;cursor:pointer;
+            transition:background .15s,transform .1s;white-space:nowrap
+        }
+        .dash-btn-primary:hover{background:var(--accent);transform:translateY(-1px)}
+        .btn-sm{
+            font-size:11px;font-weight:700;font-family:'Syne',sans-serif;
+            padding:6px 14px;border-radius:7px;border:1.5px solid var(--border);
+            background:transparent;color:var(--ink-2);cursor:pointer;
+            transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;gap:5px
+        }
+        .btn-sm:hover{border-color:var(--ink);color:var(--ink);background:#FAFAF8}
+        .btn-accept{border-color:var(--green);color:var(--green)}
+        .btn-accept:hover,.btn-accept.active{background:var(--green);color:#fff;border-color:var(--green)}
+        .btn-accept.active{background:var(--green);color:#fff}
+        .btn-refuse{border-color:var(--red);color:var(--red)}
+        .btn-refuse:hover,.btn-refuse.active{background:var(--red);color:#fff;border-color:var(--red)}
+        .btn-refuse.active{background:var(--red);color:#fff}
+        .btn-danger{border:none;background:none;font-size:11px;font-weight:600;color:var(--ink-3);cursor:pointer;padding:4px 0;font-family:'Instrument Sans',sans-serif;transition:color .12s}
+        .btn-danger:hover{color:var(--red)}
 
-                                @if($applications->isEmpty())
-                                    <div class="p-6 bg-gray-50 border rounded-lg text-center text-gray-500 mb-8">
-                                        Vous n'avez pas encore postulé à une offre.
-                                    </div>
-                                @else
-                                    <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden mb-8">
-                                        <table class="w-full text-left border-collapse">
-                                            <thead>
-                                                <tr class="bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                                    <th class="p-4">Poste</th>
-                                                    <th class="p-4">Entreprise</th>
-                                                    <th class="p-4">Score Matching</th>
-                                                    <th class="p-4">Statut</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="text-sm divide-y divide-gray-200">
-                                                @foreach($applications as $application)
-                                                    <tr class="hover:bg-gray-50 transition">
-                                                        <td class="p-4 font-semibold text-gray-900">{{ $application->offer->title ?? 'Poste supprimé' }}</td>
-                                                        <td class="p-4 text-gray-600">{{ $application->offer->company_name ?? '-' }}</td>
-                                                        <td class="p-4">
-                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $application->match_score >= 70 ? 'bg-green-100 text-green-800' : ($application->match_score >= 40 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
-                                                                {{ $application->match_score }}%
-                                                            </span>
-                                                        </td>
-                                                        <td class="p-4">
-                                                            @if($application->status === 'accepte')
-                                                                <span class="px-2 py-0.5 text-xs font-bold rounded bg-emerald-100 text-emerald-800 uppercase">Accepté</span>
-                                                            @elseif($application->status === 'refuse')
-                                                                <span class="px-2 py-0.5 text-xs font-bold rounded bg-rose-100 text-rose-800 uppercase">Refusé</span>
-                                                            @else
-                                                                <span class="px-2 py-0.5 text-xs font-bold rounded bg-amber-100 text-amber-800 uppercase">En cours</span>
-                                                            @endif
-                                                        </td>
-                                                        <td class="p-4">
-                                                            @if($application->status === 'en cours')
-                                                                <!-- Le candidat peut annuler s'il n'y a pas encore de réponse -->
-                                                                <form action="{{ route('applications.destroy', $application->id) }}" method="POST" onsubmit="return confirm('Annuler définitivement ta candidature pour ce poste ?');">
-                                                                    @csrf
-                                                                    @method('DELETE')
-                                                                    <button type="submit" style="color: #dc3545; background: none; border: none; cursor: pointer;" class="hover:underline">
-                                                                        ❌ Annuler ma candidature
-                                                                    </button>
-                                                                </form>
-                                                            @else
-                                                                <!-- Si c'est accepté ou refusé, il peut juste nettoyer son historique -->
-                                                                <form action="{{ route('applications.destroy', $application->id) }}" method="POST" onsubmit="return confirm('Masquer cette candidature de ton historique ?');">
-                                                                    @csrf
-                                                                    @method('DELETE')
-                                                                    <button type="submit" style="color: #6c757d; background: none; border: none; cursor: pointer;" class="hover:underline">
-                                                                        🗑️ Retirer de l'historique
-                                                                    </button>
-                                                                </form>
-                                                            @endif
-                                                        </td>
-                                                    </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                @endif
+        /* OFFER CARDS (candidat) */
+        .offer-card{
+            background:var(--card);border:1px solid var(--border);border-radius:14px;
+            padding:1.2rem 1.4rem;margin-bottom:10px;
+            display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;
+            transition:box-shadow .2s,border-color .2s,transform .15s
+        }
+        .offer-card:hover{border-color:var(--ink);box-shadow:4px 4px 0 var(--ink);transform:translate(-2px,-2px)}
+        .o-logo{width:46px;height:46px;border-radius:10px;display:grid;place-items:center;font-size:20px;flex-shrink:0}
+        .o-info{flex:1;min-width:200px}
+        .o-company{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px}
+        .o-title{font-size:15px;font-weight:700;font-family:'Syne',sans-serif;color:var(--ink);margin-bottom:6px}
+        .o-meta{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--ink-3)}
+        .o-meta span{display:flex;align-items:center;gap:4px}
+        .btn-postuler{
+            background:var(--ink);color:#fff;text-decoration:none;
+            font-family:'Syne',sans-serif;font-size:12px;font-weight:700;
+            padding:10px 22px;border-radius:9px;white-space:nowrap;
+            transition:background .15s,transform .1s;display:inline-block
+        }
+        .btn-postuler:hover{background:var(--accent);transform:translateY(-1px)}
 
-                                <hr class="my-8 border-gray-200">
+        /* EMPTY STATE */
+        .empty{text-align:center;padding:3rem 1rem;color:var(--ink-3)}
+        .empty-icon{font-size:36px;margin-bottom:1rem}
+        .empty p{font-size:13px}
 
-                            <h4 class="text-md font-semibold text-gray-700 mb-4">Offres d'emploi disponibles ({{ $offers->count() }})</h4>
+        /* SCORE BAR */
+        .score-bar{display:flex;align-items:center;gap:8px}
+        .score-bar-track{flex:1;height:4px;border-radius:2px;background:var(--border);max-width:80px}
+        .score-bar-fill{height:4px;border-radius:2px}
 
-                            @if($offers->isEmpty())
-                                <div class="p-6 bg-gray-50 border rounded-lg text-center text-gray-500">
-                                    Aucune offre d'emploi n'est disponible pour le moment.
-                                </div>
-                            @else
-                                <div class="space-y-4">
-                                    @foreach($offers as $offer)
-                                        <div class="p-6 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                                            <div class="space-y-2">
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                                    {{ $offer->contract_type }}
-                                                </span>
-                                                <h4 class="text-lg font-bold text-gray-900">{{ $offer->title }}</h4>
-                                                <p class="text-sm text-gray-600 font-medium">{{ $offer->company_name }} • {{ $offer->location }}</p>
-                                                @if($offer->salary)
-                                                    <p class="text-xs text-gray-500 font-mono">Salaire : {{ $offer->salary }}</p>
-                                                @endif
-                                                <p class="text-sm text-gray-700 mt-2 line-clamp-2">{{ $offer->description }}</p>
-                                            </div>
-                                            <div class="w-full sm:w-auto text-right">
-                                                <a href="{{ route('applications.create', $offer->id) }}" class="inline-flex items-center justify-center w-full sm:w-auto px-4 py-2 bg-gray-900 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-800 transition">
-                                                    Postuler
-                                                </a>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @endif
-                        </div>
-                    @endif
+        /* CV LINK */
+        .cv-link{
+            display:inline-flex;align-items:center;gap:5px;
+            font-size:11px;font-weight:700;color:var(--blue);
+            text-decoration:none;padding:4px 10px;border-radius:6px;
+            background:var(--blue-lt);transition:background .12s
+        }
+        .cv-link:hover{background:#DBEAFE}
 
+        /* SECTION DIVIDER */
+        .section-divider{display:flex;align-items:center;gap:1rem;margin:2rem 0 1.5rem}
+        .section-divider h3{font-size:16px;font-weight:700;white-space:nowrap;font-family:'Syne',sans-serif}
+        .section-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+        @media(max-width:640px){
+            .dash-table th:nth-child(3),.dash-table td:nth-child(3){display:none}
+            .stats-grid{grid-template-columns:repeat(2,1fr)}
+        }
+    </style>
+
+    <div class="dash-wrap">
+
+        {{-- ═══════════════════════════════════════ --}}
+        {{-- ░░░  ESPACE RECRUTEUR  ░░░             --}}
+        {{-- ═══════════════════════════════════════ --}}
+        @if(Auth::user()->role === 'recruiter')
+
+            {{-- STATS --}}
+            @php
+                $totalCandidatures = $recruiterApplications->count();
+                $acceptes  = $recruiterApplications->where('status','accepte')->count();
+                $refuses   = $recruiterApplications->where('status','refuse')->count();
+                $enCours   = $recruiterApplications->where('status','en cours')->count();
+            @endphp
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="s-label">Offres publiées</div>
+                    <div class="s-val">{{ $myOffers->count() }}</div>
+                    <div class="s-sub">annonces actives</div>
+                </div>
+                <div class="stat-card">
+                    <div class="s-label">Candidatures reçues</div>
+                    <div class="s-val">{{ $totalCandidatures }}</div>
+                    <div class="s-sub">au total</div>
+                </div>
+                <div class="stat-card">
+                    <div class="s-label">Acceptés</div>
+                    <div class="s-val" style="color:var(--green)">{{ $acceptes }}</div>
+                    <div class="s-sub"><span class="s-dot" style="background:var(--green)"></span>profils validés</div>
+                </div>
+                <div class="stat-card">
+                    <div class="s-label">En attente</div>
+                    <div class="s-val" style="color:var(--amber)">{{ $enCours }}</div>
+                    <div class="s-sub"><span class="s-dot" style="background:var(--amber)"></span>à traiter</div>
                 </div>
             </div>
-        </div>
+
+            {{-- MES OFFRES --}}
+            <div class="block">
+                <div class="block-head">
+                    <div>
+                        <h3>Vos annonces en ligne</h3>
+                        <p>{{ $myOffers->count() }} offre(s) publiée(s)</p>
+                    </div>
+                    <a href="{{ route('offers.create') }}" class="dash-btn-primary">+ Nouvelle offre</a>
+                </div>
+
+                @if($myOffers->isEmpty())
+                    <div class="empty">
+                        <div class="empty-icon">📭</div>
+                        <p>Vous n'avez pas encore publié d'offre d'emploi.</p>
+                    </div>
+                @else
+                    <div style="overflow-x:auto">
+                        <table class="dash-table">
+                            <thead>
+                                <tr>
+                                    <th>Poste</th>
+                                    <th>Entreprise</th>
+                                    <th>Lieu</th>
+                                    <th>Contrat</th>
+                                    <th style="text-align:center">Candidatures</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($myOffers as $myOffer)
+                                    @php $count = \App\Models\Application::where('offer_id', $myOffer->id)->count(); @endphp
+                                    <tr>
+                                        <td><div class="td-title">{{ $myOffer->title }}</div></td>
+                                        <td>{{ $myOffer->company_name }}</td>
+                                        <td style="color:var(--ink-3)">
+                                            <span style="display:flex;align-items:center;gap:4px">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0116 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                                {{ $myOffer->location }}
+                                            </span>
+                                        </td>
+                                        <td><span class="badge badge-blue">{{ $myOffer->contract_type }}</span></td>
+                                        <td style="text-align:center">
+                                            <a href="{{ route('offers.applications', $myOffer->id) }}" class="btn-sm">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                                                Voir les CV ({{ $count }})
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
+
+            {{-- GESTION CANDIDATURES --}}
+            <div class="block">
+                <div class="block-head">
+                    <div>
+                        <h3>Gestion des candidatures reçues</h3>
+                        <p>Acceptez ou refusez les profils — le candidat est notifié automatiquement</p>
+                    </div>
+                    @if($totalCandidatures > 0)
+                        <span class="badge badge-ink">{{ $enCours }} en attente</span>
+                    @endif
+                </div>
+
+                @if(isset($recruiterApplications) && !$recruiterApplications->isEmpty())
+                    <div style="overflow-x:auto">
+                        <table class="dash-table">
+                            <thead>
+                                <tr>
+                                    <th>Candidat</th>
+                                    <th>Poste visé</th>
+                                    <th>Score</th>
+                                    <th>Statut</th>
+                                    <th>CV</th>
+                                    <th style="text-align:right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($recruiterApplications as $application)
+                                    <tr>
+                                        <td>
+                                            <div class="td-title">{{ $application->user->name }}</div>
+                                            <div class="td-sub">{{ $application->user->email }}</div>
+                                        </td>
+                                        <td style="font-weight:500;color:var(--ink)">{{ $application->offer->title ?? 'Offre supprimée' }}</td>
+                                        <td>
+                                            @php $s = $application->match_score; @endphp
+                                            <div class="score-bar">
+                                                <span class="badge {{ $s >= 70 ? 'badge-green' : ($s >= 40 ? 'badge-amber' : 'badge-red') }}">{{ $s }}%</span>
+                                                <div class="score-bar-track">
+                                                    <div class="score-bar-fill" style="width:{{ $s }}%;background:{{ $s >= 70 ? 'var(--green)' : ($s >= 40 ? 'var(--amber)' : 'var(--red)') }}"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @if($application->status === 'accepte')
+                                                <span class="badge badge-green">✓ Accepté</span>
+                                            @elseif($application->status === 'refuse')
+                                                <span class="badge badge-red">✕ Refusé</span>
+                                            @else
+                                                <span class="badge badge-amber">⏳ En cours</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <a href="{{ asset('storage/' . $application->resume_path) }}" target="_blank" class="cv-link">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                                CV PDF
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap">
+                                                <form action="{{ route('applications.update-status', [$application->id, 'accepte']) }}" method="POST" style="display:inline">
+                                                    @csrf @method('PATCH')
+                                                    <button type="submit" class="btn-sm btn-accept {{ $application->status === 'accepte' ? 'active' : '' }}">✓ Accepter</button>
+                                                </form>
+                                                <form action="{{ route('applications.update-status', [$application->id, 'refuse']) }}" method="POST" style="display:inline">
+                                                    @csrf @method('PATCH')
+                                                    <button type="submit" class="btn-sm btn-refuse {{ $application->status === 'refuse' ? 'active' : '' }}">✕ Refuser</button>
+                                                </form>
+                                                <form action="{{ route('applications.destroy', $application->id) }}" method="POST" onsubmit="return confirm('Retirer définitivement ce candidat ?')" style="display:inline">
+                                                    @csrf @method('DELETE')
+                                                    <button type="submit" class="btn-danger">Retirer</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="empty">
+                        <div class="empty-icon">📬</div>
+                        <p>Aucune candidature reçue pour le moment.</p>
+                    </div>
+                @endif
+            </div>
+
+        {{-- ═══════════════════════════════════════ --}}
+        {{-- ░░░  ESPACE CANDIDAT  ░░░              --}}
+        {{-- ═══════════════════════════════════════ --}}
+        @else
+
+            {{-- STATS CANDIDAT --}}
+            @php
+                $totalApp  = $applications->count();
+                $acceptes  = $applications->where('status','accepte')->count();
+                $refuses   = $applications->where('status','refuse')->count();
+                $enCours   = $applications->where('status','en cours')->count();
+            @endphp
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="s-label">Candidatures envoyées</div>
+                    <div class="s-val">{{ $totalApp }}</div>
+                    <div class="s-sub">au total</div>
+                </div>
+                <div class="stat-card">
+                    <div class="s-label">En attente</div>
+                    <div class="s-val" style="color:var(--amber)">{{ $enCours }}</div>
+                    <div class="s-sub"><span class="s-dot" style="background:var(--amber)"></span>réponse attendue</div>
+                </div>
+                <div class="stat-card">
+                    <div class="s-label">Acceptées</div>
+                    <div class="s-val" style="color:var(--green)">{{ $acceptes }}</div>
+                    <div class="s-sub"><span class="s-dot" style="background:var(--green)"></span>félicitations !</div>
+                </div>
+                <div class="stat-card">
+                    <div class="s-label">Offres disponibles</div>
+                    <div class="s-val" style="color:var(--blue)">{{ $offers->count() }}</div>
+                    <div class="s-sub"><span class="s-dot" style="background:var(--blue)"></span>à explorer</div>
+                </div>
+            </div>
+
+            {{-- MES CANDIDATURES --}}
+            <div class="block">
+                <div class="block-head">
+                    <div>
+                        <h3>Mes candidatures</h3>
+                        <p>Historique de vos postulations</p>
+                    </div>
+                    @if($totalApp > 0)
+                        <span class="badge badge-ink">{{ $totalApp }} envoyée(s)</span>
+                    @endif
+                </div>
+
+                @if($applications->isEmpty())
+                    <div class="empty">
+                        <div class="empty-icon">📤</div>
+                        <p>Vous n'avez pas encore postulé à une offre.</p>
+                    </div>
+                @else
+                    <div style="overflow-x:auto">
+                        <table class="dash-table">
+                            <thead>
+                                <tr>
+                                    <th>Poste</th>
+                                    <th>Entreprise</th>
+                                    <th>Score</th>
+                                    <th>Statut</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($applications as $application)
+                                    <tr>
+                                        <td>
+                                            <div class="td-title">{{ $application->offer->title ?? 'Poste supprimé' }}</div>
+                                            <div class="td-sub">Postulé le {{ $application->created_at->format('d/m/Y') }}</div>
+                                        </td>
+                                        <td>{{ $application->offer->company_name ?? '—' }}</td>
+                                        <td>
+                                            @php $s = $application->match_score; @endphp
+                                            <span class="badge {{ $s >= 70 ? 'badge-green' : ($s >= 40 ? 'badge-amber' : 'badge-red') }}">{{ $s }}%</span>
+                                        </td>
+                                        <td>
+                                            @if($application->status === 'accepte')
+                                                <span class="badge badge-green">✓ Accepté</span>
+                                            @elseif($application->status === 'refuse')
+                                                <span class="badge badge-red">✕ Refusé</span>
+                                            @else
+                                                <span class="badge badge-amber">⏳ En cours</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($application->status === 'en cours')
+                                                <form action="{{ route('applications.destroy', $application->id) }}" method="POST" onsubmit="return confirm('Annuler cette candidature ?')">
+                                                    @csrf @method('DELETE')
+                                                    <button type="submit" class="btn-danger">✕ Annuler</button>
+                                                </form>
+                                            @else
+                                                <form action="{{ route('applications.destroy', $application->id) }}" method="POST" onsubmit="return confirm('Masquer cette candidature ?')">
+                                                    @csrf @method('DELETE')
+                                                    <button type="submit" class="btn-danger">🗑 Masquer</button>
+                                                </form>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
+
+            {{-- OFFRES DISPONIBLES --}}
+            <div class="section-divider"><h3>Offres disponibles</h3></div>
+
+            @if($offers->isEmpty())
+                <div class="empty">
+                    <div class="empty-icon">🔍</div>
+                    <p>Aucune offre d'emploi disponible pour le moment.</p>
+                </div>
+            @else
+                @foreach($offers as $offer)
+                    <div class="offer-card">
+                        <div class="o-logo" style="background:{{ ['#EBF2FF','#F0FDF4','#FDF2F8','#FAEEDA','#F7F5F0'][($loop->index % 5)] }}">
+                            {{ ['💻','🏢','🎨','📊','⚙️'][$loop->index % 5] }}
+                        </div>
+                        <div class="o-info">
+                            <div class="o-company" style="color:var(--ink-3)">{{ $offer->company_name }}</div>
+                            <div class="o-title">{{ $offer->title }}</div>
+                            <div class="o-meta">
+                                <span>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0116 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                    {{ $offer->location }}
+                                </span>
+                                @if($offer->salary)
+                                    <span>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                                        {{ $offer->salary }}
+                                    </span>
+                                @endif
+                                <span class="badge badge-blue" style="font-size:10px">{{ $offer->contract_type }}</span>
+                            </div>
+                            @if($offer->description)
+                                <p style="font-size:12px;color:var(--ink-3);margin-top:8px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">
+                                    {{ $offer->description }}
+                                </p>
+                            @endif
+                        </div>
+                        <a href="{{ route('applications.create', $offer->id) }}" class="btn-postuler">Postuler →</a>
+                    </div>
+                @endforeach
+            @endif
+
+        @endif
     </div>
 </x-app-layout>
