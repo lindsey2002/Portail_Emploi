@@ -15,12 +15,17 @@ Route::get('/dashboard', function () {
     
     // Si c'est un candidat, on récupère toutes les offres de la base de données
     if ($user->role === 'candidate') {
-        $offers = Offer::latest()->get();
+        $offers = App\Models\Offer::latest()->get();
         return view('dashboard', compact('offers'));
     }
 
-    return view('dashboard');
+    // Si c'est un recruteur on redirige ves la methode index du controleur d'offres
+    return app(OfferController::class)->index();
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('/my-offers/{offer}/applications', [OfferController::class, 'showApplications'])
+    ->middleware('auth')
+    ->name('offers.applications');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -46,6 +46,29 @@ class OfferController extends Controller
         ]);
 
         return redirect()->route('dashboard')->with('succès', 'Votre offre d\'emploie a bien été publiée');
+    }
 
+    public function index()
+    {
+        if(Auth::user()->role !== 'recruiter'){
+            return redirect('/dashboard')->with('error', 'Accès réservé aux recruteurs.');
+        }
+
+        $myOffers = Offer::where('user_id', Auth::id())->latest()->get();
+
+        return view('dashboard', compact('myOffers'));
+    }
+
+    public function showApplications($id)
+    {
+        if(Auth::user()->role !== 'recruiter'){
+            return redirect('/dashboard')->with('error', 'Accès réservé aux recruteurs.');
+        }
+
+        $offer = Offer::where('id', $id)->where('user_id', Auth::id())->firstOrFail();
+
+        $applications = \App\Models\Application::with('user')->where('offer_id', $id)->latest()->get();
+
+        return view('offers.applications', compact('offer', 'applications'));
     }
 }
