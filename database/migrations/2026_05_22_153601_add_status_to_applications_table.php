@@ -6,17 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-   public function up(): void
+    public function up(): void
     {
         Schema::table('applications', function (Blueprint $table) {
-            $table->integer('match_score')->default(0)->after('resume_path');
+            // On ajoute le statut avec 'en cours' par défaut pour ne pas bloquer les anciennes lignes
+            $table->string('status')->default('en cours')->after('match_score');
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::table('applications', function (Blueprint $table) {
-            $table->dropColumn('match_score');
+            $table->dropColumn('status');
         });
     }
 };

@@ -99,4 +99,26 @@ class ApplicationController extends Controller
 
         return redirect()->route('dashboard')->with('success', 'Votre candidature a été transmise avec succès !');
     }
+
+    public function updateStatus(Application $application, $status)
+    {
+        //dd("Le clic fonctionne !", $application->id, $status);
+        if (!in_array($status, ['accepte', 'refuse'])) {
+            return back()->with('error', 'Statut invalide.');
+        }
+
+        $application->status = $status;
+        $application->save();
+
+        // \Illuminate\Support\Facades\Mail::to($application->user->email)->send(new \App\Mail\ApplicationStatusUpdated($application));
+            
+        return back()->with('success', 'Statut mis à jour et le candidat a été notifié par e-mail.');
+    }
+    public function destroy(Application $application)
+    {
+        // On supprime définitivement la candidature de la table
+        $application->delete();
+
+        return back()->with('success', 'La candidature a été retirée pour libérer l\'espace.');
+    }
 }

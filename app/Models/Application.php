@@ -14,6 +14,7 @@ class Application extends Model
         'cover_letter',
         'resume_path',
         'match_score',
+        'status',
     ];
 
     public function offer(): BelongsTo

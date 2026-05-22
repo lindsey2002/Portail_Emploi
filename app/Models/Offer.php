@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Offer extends Model
 {
-    //
+
     protected $fillable = [
         'user_id',
         'title',
